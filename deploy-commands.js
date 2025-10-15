@@ -1,28 +1,30 @@
 import { REST, Routes } from 'discord.js';
 import fs from 'fs';
 
-const TOKEN = process.env.TOKEN;
-const CLIENT_ID = process.env.CLIENTID;
+export default {
+  name: 'ready',
+  once: true,
+  async execute(client) {
+    console.log(`Logged in as ${client.user.tag}`);
 
-const commands = [];
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+    const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
-for (const file of commandFiles) {
-    const command = await import(`./commands/${file}`);
-    commands.push(command.default.data.toJSON());
-}
+    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+    const commands = [];
 
-const rest = new REST({ version: '10' }).setToken(TOKEN);
-
-(async () => {
-    try {
-        console.log('Registering global slash commands...');
-        await rest.put(
-            Routes.applicationCommands(CLIENT_ID),
-            { body: commands },
-        );
-        console.log('Commands registered successfully!');
-    } catch (error) {
-        console.error(error);
+    for (const file of commandFiles) {
+      const command = await import(`../commands/${file}`);
+      commands.push(command.default.data.toJSON());
     }
-})();
+
+    try {
+      await rest.put(
+        Routes.applicationCommands(process.env.CLIENTID),
+        { body: commands }
+      );
+      console.log('Global slash commands registered successfully!');
+    } catch (error) {
+      console.error('Failed to register global commands:', error);
+    }
+  },
+};
