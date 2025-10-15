@@ -1,5 +1,6 @@
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import fs from 'fs';
+import deployCommands from './deploy-commands.js';
 
 const TOKEN = process.env.TOKEN;
 
@@ -22,6 +23,7 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);
+    await deployCommands.execute(client);
 });
 
 client.on('interactionCreate', async interaction => {
