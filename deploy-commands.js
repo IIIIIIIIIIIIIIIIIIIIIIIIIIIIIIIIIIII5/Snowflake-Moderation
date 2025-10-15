@@ -12,7 +12,7 @@ export default {
 
     try {
       await rest.put(
-        Routes.applicationCommands(process.env.CLIENT_ID),
+        Routes.applicationCommands(process.env.CLIENTID),
         { body: commands }
       );
       console.log("Global slash commands registered successfully.");
