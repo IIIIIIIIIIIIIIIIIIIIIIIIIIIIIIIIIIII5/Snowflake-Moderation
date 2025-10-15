@@ -1,5 +1,4 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import fetch from 'node-fetch';
 
 const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096'];
 const BIN_ID = process.env.JSONBIN_BIN_ID;
