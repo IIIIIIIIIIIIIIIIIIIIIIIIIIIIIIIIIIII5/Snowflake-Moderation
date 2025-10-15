@@ -21,9 +21,9 @@ for (const file of commandFiles) {
     client.commands.set(command.default.data.name, command.default);
 }
 
-client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}`);
-    await deployCommands.execute(client);
+client.once('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+  await deployCommands.execute(client);
 });
 
 client.on('interactionCreate', async interaction => {
