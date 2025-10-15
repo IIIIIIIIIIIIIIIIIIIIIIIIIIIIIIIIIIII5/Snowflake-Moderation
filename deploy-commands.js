@@ -1,7 +1,7 @@
 import { REST, Routes, ActivityType } from "discord.js";
 
-const CLIENT_ID = process.env.CLIENTID.replace(/"/g, '');
-const TOKEN = process.env.TOKEN.replace(/"/g, '');
+const CLIENT_ID = process.env.CLIENTID;
+const TOKEN = process.env.TOKEN;
 
 export default {
   name: "ready",
