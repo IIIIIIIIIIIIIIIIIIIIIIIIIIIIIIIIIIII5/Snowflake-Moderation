@@ -8,7 +8,7 @@ export async function logAction(actionData) {
             headers: { 'X-Master-Key': API_KEY }
         });
         const bin = await getResponse.json();
-        const logs = bin.record || [];
+        const logs = Array.isArray(bin.record) ? bin.record : [];
 
         logs.push({ ...actionData, timestamp: new Date().toISOString() });
 
