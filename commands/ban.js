@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { logAction } from '../utils/logAction.js';
 
 const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096'];
@@ -21,15 +21,28 @@ export default {
         if (!member) return interaction.reply({ content: 'User not found.', ephemeral: true });
         if (!member.bannable) return interaction.reply({ content: 'I cannot ban this user.', ephemeral: true });
 
+        const dmEmbed = new EmbedBuilder()
+            .setTitle('You have been banned')
+            .setDescription(`Reason: ${reason}`)
+            .setColor(0xFF0000)
+            .setTimestamp()
+            .setFooter({ text: `Banned by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
+
+        try {
+            await member.send({ embeds: [dmEmbed] });
+        } catch {
+            console.warn(`Failed to DM ${member.user.tag}`);
+        }
+
         await member.ban({ reason });
 
-        const embed = new EmbedBuilder()
+        const publicEmbed = new EmbedBuilder()
             .setDescription(`<@${member.id}> has been banned. Reason: ${reason}`)
             .setColor(0xFF0000)
             .setTimestamp()
             .setFooter({ text: `Banned by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [publicEmbed] });
 
         await logAction({
             type: 'ban',
