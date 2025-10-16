@@ -10,8 +10,7 @@ export default {
         .addStringOption(option =>
             option.setName('userid').setDescription('User ID to unban').setRequired(true))
         .addStringOption(option =>
-            option.setName('reason').setDescription('Reason for unban').setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+            option.setName('reason').setDescription('Reason for unban').setRequired(false)),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id)))
