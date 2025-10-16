@@ -1,6 +1,6 @@
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import fs from 'fs';
-import deployCommands from './deploy-commands.js';
+import { loadCommands } from './utils/loadCommands.js';
 
 const TOKEN = process.env.TOKEN?.replace(/"/g, '');
 
@@ -24,7 +24,7 @@ async function loadCommands() {
   console.log(`Loaded ${client.commands.size} commands:`, [...client.commands.keys()]);
 }
 
-await loadCommands();
+await loadCommands(client);
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
