@@ -22,7 +22,7 @@ export default {
 
     const dmEmbed = new EmbedBuilder()
       .setTitle('# PUNISHMENT RECEIVED')
-      .setDescription(`You have been **warned** in **Snowflake Penitentiary Communications Server**, for **this instance**.  
+      .setDescription(`You have been **warned** in **Snowflake Penitentiary Communications Server**, for ${reason}.  
 If you feel this punishment has been delivered to you unfairly, then join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal your punishment.`)
       .setColor(0xFFD700)
       .setTimestamp()
