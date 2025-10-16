@@ -17,8 +17,7 @@ export default {
         .addStringOption(option =>
             option.setName('reason')
                   .setDescription('Reason for the timeout.')
-                  .setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+                  .setRequired(false)),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id))) {
