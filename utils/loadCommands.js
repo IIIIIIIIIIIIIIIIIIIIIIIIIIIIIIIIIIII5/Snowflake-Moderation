@@ -8,10 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export async function loadCommands(client) {
   client.commands = new Collection();
 
-  const commandFiles = readdirSync(path.join(__dirname, '../commands')).filter(file => file.endsWith('.js'));
+  const commandsPath = path.join(__dirname, '../commands');
+  const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
-    const filePath = path.join(__dirname, '../commands', file);
+    const filePath = path.join(commandsPath, file);
     try {
       const commandModule = await import(filePath);
       const command = commandModule.default;
@@ -29,19 +30,25 @@ export async function loadCommands(client) {
 
   console.log(`Loaded ${client.commands.size} commands:`, [...client.commands.keys()]);
 
-  if (!process.env.CLIENTID || !process.env.TOKEN) {
+  const CLIENT_ID = process.env.CLIENTID?.replace(/"/g, '');
+  const TOKEN = process.env.TOKEN?.replace(/"/g, '');
+
+  if (!CLIENT_ID || !TOKEN) {
     throw new Error('Missing CLIENTID or TOKEN in environment variables.');
   }
 
-  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-
+  const rest = new REST({ version: '10' }).setToken(TOKEN);
   const commands = client.commands.map(cmd => cmd.data.toJSON());
 
+  console.log('Registering global slash commands...');
+  console.log('Commands to register:', commands.map(c => c.name));
+
   try {
-    await rest.put(Routes.applicationCommands(process.env.CLIENTID), {
-      body: commands,
-    });
-    console.log('Global slash commands registered successfully.');
+    await rest.put(
+      Routes.applicationCommands(CLIENT_ID),
+      { body: commands }
+    );
+    console.log('Global slash commands registered successfully!');
   } catch (error) {
     console.error('Failed to register global commands:', error);
   }
