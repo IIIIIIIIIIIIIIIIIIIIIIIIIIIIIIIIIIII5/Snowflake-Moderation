@@ -1,6 +1,6 @@
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import fs from 'fs';
 import { loadCommands } from './utils/loadCommands.js';
+import fs from 'fs';
 
 const TOKEN = process.env.TOKEN?.replace(/"/g, '');
 
@@ -15,20 +15,10 @@ const client = new Client({
 
 client.commands = new Collection();
 
-async function loadCommands() {
-  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-  for (const file of commandFiles) {
-    const command = await import(`./commands/${file}`);
-    client.commands.set(command.default.data.name, command.default);
-  }
-  console.log(`Loaded ${client.commands.size} commands:`, [...client.commands.keys()]);
-}
-
 await loadCommands(client);
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
-  await deployCommands.execute(client);
 });
 
 client.on('interactionCreate', async interaction => {
