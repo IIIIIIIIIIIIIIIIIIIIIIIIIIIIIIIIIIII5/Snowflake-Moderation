@@ -6,8 +6,8 @@ export default {
   async execute(client) {
     console.log(`Logged in as ${client.user.tag}`);
 
-    if (!process.env.CLIENTID || !process.env.TOKEN) {
-      throw new Error('Missing CLIENTID or TOKEN in environment variables.');
+    if (!process.env.CLIENTID || !process.env.TOKEN || !process.env.GUILDID) {
+      throw new Error('Missing CLIENTID, TOKEN, or GUILDID in environment variables.');
     }
 
     const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
@@ -20,12 +20,13 @@ export default {
     }
 
     try {
-      await rest.put(Routes.applicationCommands(process.env.CLIENTID), {
-        body: commands,
-      });
-      console.log('Global slash commands registered successfully.');
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID),
+        { body: commands }
+      );
+      console.log('Guild slash commands registered successfully.');
     } catch (error) {
-      console.error('Failed to register global commands:', error);
+      console.error('Failed to register guild commands:', error);
     }
   },
 };
