@@ -29,7 +29,7 @@ export default {
 
     const dmEmbed = new EmbedBuilder()
       .setTitle('# PUNISHMENT RECEIVED')
-      .setDescription(`You have been **muted** from **Snowflake Penitentiary Communications Server**, for **${duration} minutes**.  
+      .setDescription(`You have been **muted** in **Snowflake Penitentiary Communications Server**, for **${duration} minutes**.  
 If you feel this punishment has been delivered to you unfairly, then join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal your punishment.`)
       .setColor(0x808080)
       .setTimestamp()
