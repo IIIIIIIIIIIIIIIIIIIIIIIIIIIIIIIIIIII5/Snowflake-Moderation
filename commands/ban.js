@@ -10,8 +10,7 @@ export default {
         .addUserOption(option =>
             option.setName('target').setDescription('User to ban').setRequired(true))
         .addStringOption(option =>
-            option.setName('reason').setDescription('Reason for the ban').setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+            option.setName('reason').setDescription('Reason for the ban').setRequired(true)),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id)))
