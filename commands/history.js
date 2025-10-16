@@ -23,7 +23,7 @@ export default {
         try {
             const res = await fetch(BASE_URL, { headers: { 'X-Master-Key': API_KEY } });
             const bin = await res.json();
-            const logs = bin.record || [];
+            const logs = Array.isArray(bin.record) ? bin.record : [];
 
             const userLogs = logs.filter(l => l.user === user.id);
 
