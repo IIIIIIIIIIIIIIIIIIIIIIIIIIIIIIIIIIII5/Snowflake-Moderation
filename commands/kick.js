@@ -9,8 +9,7 @@ export default {
         .addUserOption(option =>
             option.setName('target').setDescription('The user to kick.').setRequired(true))
         .addStringOption(option =>
-            option.setName('reason').setDescription('Reason for the kick.').setRequired(false))
-        .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
+            option.setName('reason').setDescription('Reason for the kick.').setRequired(false)),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id))) {
