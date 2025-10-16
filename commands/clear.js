@@ -7,8 +7,7 @@ export default {
         .setName('clear')
         .setDescription('Delete messages in the current channel.')
         .addIntegerOption(option =>
-            option.setName('amount').setDescription('Number of messages to delete (1–100)').setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
+            option.setName('amount').setDescription('Number of messages to delete (1–100)').setRequired(true)),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id))) {
