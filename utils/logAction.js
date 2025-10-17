@@ -10,7 +10,14 @@ export async function logAction(actionData) {
         const bin = await getResponse.json();
         const logs = Array.isArray(bin.record) ? bin.record : [];
 
-        logs.push({ ...actionData, timestamp: new Date().toISOString() });
+        const nextId = logs.length + 1;
+        const punishmentId = `#${nextId.toString().padStart(4, '0')}`;
+
+        logs.push({
+            ...actionData,
+            id: punishmentId,
+            timestamp: new Date().toISOString()
+        });
 
         await fetch(BASE_URL, {
             method: 'PUT',
