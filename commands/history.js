@@ -32,7 +32,7 @@ export default {
 
             const description = userLogs
                 .slice(-10)
-                .map(log => `**${log.type.toUpperCase()}** • ${log.reason} — <@${log.moderator}> (${new Date(log.timestamp).toLocaleString()})`)
+                .map(log => `**${log.id ?? 'N/A'}** • ${log.type.toUpperCase()} • ${log.reason} — <@${log.moderator}> (${new Date(log.timestamp).toLocaleString()})`)
                 .join('\n');
 
             const embed = new EmbedBuilder()
