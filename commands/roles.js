@@ -15,7 +15,7 @@ export default {
     const roles = interaction.guild.roles.cache
       .filter(role => ALLOWED_ROLES.includes(role.id) || role.name.toLowerCase() === 'whitelist')
       .sort((a, b) => b.position - a.position)
-      .map(role => role.name);
+      .map(role => `${role.name} - ${role.id}`);
 
     const embed = new EmbedBuilder()
       .setTitle('Allowed Roles')
