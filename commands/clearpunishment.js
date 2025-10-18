@@ -5,6 +5,10 @@ const API_KEY = process.env.JSONBIN_API_KEY;
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096', '1418979785165766717'];
 
+function formatGeneratedId(n) {
+    return `#${String(n).padStart(4, '0')}`;
+}
+
 export default {
   data: new SlashCommandBuilder()
     .setName('clearpunishment')
@@ -44,6 +48,10 @@ export default {
 
       const [removed] = logs.splice(index, 1);
 
+      logs.forEach((log, i) => {
+        log.id = formatGeneratedId(i + 1);
+      });
+
       await fetch(BASE_URL, {
         method: 'PUT',
         headers: {
@@ -54,7 +62,7 @@ export default {
       });
 
       return interaction.reply({
-        content: `Punishment ${id} (${removed.type}) for ${targetUser.tag} has been cleared.`
+        content: `Punishment ${id} (${removed.type}) for ${targetUser.tag} has been cleared. All remaining punishments have been renumbered.`
       });
     } catch (error) {
       console.error(error);
