@@ -16,7 +16,7 @@ export async function logAction(actionData) {
         logs.push({
             ...actionData,
             id: punishmentId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toLocaleString('en-GB')
         });
 
         await fetch(BASE_URL, {
@@ -27,6 +27,8 @@ export async function logAction(actionData) {
             },
             body: JSON.stringify(logs)
         });
+
+        return punishmentId;
     } catch (error) {
         console.error('Failed to save moderation log:', error);
     }
