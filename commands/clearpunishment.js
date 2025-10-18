@@ -13,6 +13,11 @@ export default {
       opt.setName('id')
         .setDescription('Punishment ID (e.g. #0002)')
         .setRequired(true)
+    )
+    .addUserOption(opt =>
+      opt.setName('target')
+        .setDescription('User whose punishment you want to clear')
+        .setRequired(false)
     ),
 
   async execute(interaction) {
@@ -22,15 +27,20 @@ export default {
 
     const rawId = interaction.options.getString('id');
     const id = rawId.startsWith('#') ? rawId : `#${rawId}`;
-    
+    const targetUser = interaction.options.getUser('target') || interaction.user;
+
     try {
       const res = await fetch(BASE_URL, { headers: { 'X-Master-Key': API_KEY } });
       const bin = await res.json();
       const logs = Array.isArray(bin.record) ? bin.record : [];
 
-      const index = logs.findIndex(log => log.id === id);
-      if (index === -1)
-        return interaction.reply({ content: `No punishment found with ID ${id}.`, ephemeral: true });
+      const index = logs.findIndex(log => log.id === id && log.user === targetUser.id);
+      if (index === -1) {
+        return interaction.reply({
+          content: `No punishment found with ID ${id} for ${targetUser.tag}.`,
+          ephemeral: true
+        });
+      }
 
       const [removed] = logs.splice(index, 1);
 
@@ -43,10 +53,12 @@ export default {
         body: JSON.stringify(logs)
       });
 
-      return interaction.reply({ content: `Punishment ${id} (${removed.type}) has been cleared.` });
+      return interaction.reply({
+        content: `Punishment ${id} (${removed.type}) for ${targetUser.tag} has been cleared.`
+      });
     } catch (error) {
       console.error(error);
-      await interaction.reply({ content: 'Failed to clear punishment.', ephemeral: true });
+      return interaction.reply({ content: 'Failed to clear punishment.', ephemeral: true });
     }
   }
 };
