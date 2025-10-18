@@ -3,7 +3,7 @@ import { SlashCommandBuilder } from 'discord.js';
 const BIN_ID = process.env.JSONBIN_BIN_ID;
 const API_KEY = process.env.JSONBIN_API_KEY;
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096'];
+const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096', '1418979785165766717'];
 
 export default {
   data: new SlashCommandBuilder()
