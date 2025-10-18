@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 
-const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096'];
+const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096', '1418979785165766717'];
 
 export default {
     data: new SlashCommandBuilder()
