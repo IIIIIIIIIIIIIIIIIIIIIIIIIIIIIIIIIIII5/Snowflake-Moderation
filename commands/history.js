@@ -5,6 +5,10 @@ const BIN_ID = process.env.JSONBIN_BIN_ID;
 const API_KEY = process.env.JSONBIN_API_KEY;
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
+function formatGeneratedId(n) {
+    return `#${String(n).padStart(4, '0')}`;
+}
+
 export default {
     data: new SlashCommandBuilder()
         .setName('history')
@@ -26,18 +30,51 @@ export default {
             const bin = await res.json();
             const logs = Array.isArray(bin.record) ? bin.record : [];
 
-            const userLogs = logs.filter(l => l.user === user.id);
+            if (logs.length === 0)
+                return interaction.reply({ content: 'No moderation logs exist yet.', ephemeral: true });
+
+            const allSorted = [...logs].sort((a, b) => {
+                const ta = a.timestamp ? new Date(a.timestamp).getTime() : Number.POSITIVE_INFINITY;
+                const tb = b.timestamp ? new Date(b.timestamp).getTime() : Number.POSITIVE_INFINITY;
+                return ta - tb;
+            });
+
+            const displayIdMap = new Map();
+            allSorted.forEach((log, idx) => {
+                if (log.id && typeof log.id === 'string' && log.id.trim() !== '') {
+                    displayIdMap.set(log, log.id);
+                } else {
+                    displayIdMap.set(log, formatGeneratedId(idx + 1));
+                }
+            });
+
+            const userLogs = logs
+                .map(l => {
+                    let matchIndex = allSorted.indexOf(l);
+                    if (matchIndex === -1) {
+                        matchIndex = allSorted.findIndex(
+                            x => x.timestamp === l.timestamp && x.type === l.type && x.moderator === l.moderator && x.reason === l.reason && x.user === l.user
+                        );
+                    }
+                    const derivedId = matchIndex !== -1 ? (allSorted[matchIndex].id || formatGeneratedId(matchIndex + 1)) : (l.id || 'N/A');
+                    return { ...l, _displayId: derivedId };
+                })
+                .filter(l => l.user === user.id);
 
             if (userLogs.length === 0)
                 return interaction.reply({ content: 'No history found for this user.', ephemeral: true });
 
-            userLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            userLogs.sort((a, b) => {
+                const ta = a.timestamp ? new Date(a.timestamp).getTime() : Number.POSITIVE_INFINITY;
+                const tb = b.timestamp ? new Date(b.timestamp).getTime() : Number.POSITIVE_INFINITY;
+                return ta - tb;
+            });
 
             const description = userLogs
                 .slice(-10)
-                .map(log => 
-                    `**${log.id ?? 'N/A'}** • **${log.type.toUpperCase()}** • ${log.reason}\n` +
-                    `— <@${log.moderator}> • ${new Date(log.timestamp).toLocaleString('en-GB')}`
+                .map(log =>
+                    `**${log._displayId ?? (log.id ?? 'N/A')}** • **${(log.type || 'UNKNOWN').toUpperCase()}** • ${log.reason || 'No reason provided.'}\n` +
+                    `— <@${log.moderator || 'Unknown'}> • ${log.timestamp ? new Date(log.timestamp).toLocaleString('en-GB') : 'No timestamp'}`
                 )
                 .join('\n\n');
 
