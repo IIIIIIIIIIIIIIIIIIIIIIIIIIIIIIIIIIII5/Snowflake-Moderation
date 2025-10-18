@@ -52,18 +52,14 @@ export default {
                 });
             }
 
-            const allSorted = [...logs].sort((a, b) => {
-                const ta = a.timestamp ? new Date(a.timestamp).getTime() : Infinity;
-                const tb = b.timestamp ? new Date(b.timestamp).getTime() : Infinity;
-                return ta - tb;
-            });
+            const allSorted = [...logs];
 
             const displayIdMap = new Map();
             allSorted.forEach((log, index) => {
                 const validId = log.id && log.id.trim() !== '' ? log.id : formatGeneratedId(index + 1);
                 displayIdMap.set(log, validId);
             });
-            
+
             const userLogs = allSorted
                 .filter(log => log.user === user.id)
                 .map(log => ({
@@ -81,12 +77,9 @@ export default {
             const description = userLogs
                 .slice(-10)
                 .map(log => {
-                    const dateOnly = log.timestamp
-                        ? new Date(log.timestamp).toLocaleDateString('en-GB')
-                        : 'No date';
                     return (
-                        `**${log.displayId ?? 'N/A'}** • **${log.type || 'unknown'}** • ${log.reason || 'No reason provided.'}\n` +
-                        `— <@${log.moderator || 'Unknown'}> • ${dateOnly}`
+                        `**${log.displayId ?? 'N/A'}** • ${log.type || 'unknown'} • ${log.reason || 'No reason provided.'}\n` +
+                        `— <@${log.moderator || 'Unknown'}>`
                     );
                 })
                 .join('\n\n');
@@ -94,8 +87,7 @@ export default {
             const embed = new EmbedBuilder()
                 .setTitle(`History for ${user.tag}`)
                 .setDescription(description)
-                .setColor(0x0099FF)
-                .setTimestamp();
+                .setColor(0x0099FF);
 
             await interaction.reply({ embeds: [embed] });
 
