@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096'];
+const ALLOWED_ROLES = ['1398691449939169331', '1386369108408406096', '1418979785165766717'];
 const BIN_ID = process.env.JSONBIN_BIN_ID;
 const API_KEY = process.env.JSONBIN_API_KEY;
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -12,7 +12,8 @@ export default {
         .addUserOption(option =>
             option.setName('target')
                   .setDescription('User to check.')
-                  .setRequired(true)),
+                  .setRequired(true)
+        ),
 
     async execute(interaction) {
         if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id)))
@@ -30,10 +31,15 @@ export default {
             if (userLogs.length === 0)
                 return interaction.reply({ content: 'No history found for this user.', ephemeral: true });
 
+            userLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
             const description = userLogs
                 .slice(-10)
-                .map(log => `**${log.id ?? 'N/A'}** • ${log.type.toUpperCase()} • ${log.reason} — <@${log.moderator}> (${new Date(log.timestamp).toLocaleString()})`)
-                .join('\n');
+                .map(log => 
+                    `**${log.id ?? 'N/A'}** • **${log.type.toUpperCase()}** • ${log.reason}\n` +
+                    `— <@${log.moderator}> • ${new Date(log.timestamp).toLocaleString('en-GB')}`
+                )
+                .join('\n\n');
 
             const embed = new EmbedBuilder()
                 .setTitle(`History for ${user.tag}`)
