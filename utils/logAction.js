@@ -1,20 +1,14 @@
-const admin = require("firebase-admin");
-const firebaseConfig = require("./firebase-credentials.json");
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(firebaseConfig)
-  });
-}
-
-const db = admin.firestore();
-const LOGS_COLLECTION = "logs";
+const BIN_ID = process.env.JSONBIN_BIN_ID;
+const API_KEY = process.env.JSONBIN_API_KEY;
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
 export async function logAction(actionData) {
     try {
-        const snapshot = await db.collection(LOGS_COLLECTION).get();
-        const logs = [];
-        snapshot.forEach(doc => logs.push(doc.data()));
+        const getResponse = await fetch(BASE_URL, {
+            headers: { 'X-Master-Key': API_KEY }
+        });
+        const bin = await getResponse.json();
+        const logs = Array.isArray(bin.record) ? bin.record : [];
 
         const nextId = logs.length + 1;
         const punishmentId = `#${nextId.toString().padStart(4, '0')}`;
@@ -22,16 +16,17 @@ export async function logAction(actionData) {
         logs.push({
             ...actionData,
             id: punishmentId,
-            timestamp: new Date().toLocaleString('en-GB')
+            timestamp: new Date().toISOString()
         });
 
-        await db.collection(LOGS_COLLECTION).add({
-            ...actionData,
-            id: punishmentId,
-            timestamp: new Date().toLocaleString('en-GB')
+        await fetch(BASE_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify(logs)
         });
-
-        return punishmentId;
     } catch (error) {
         console.error('Failed to save moderation log:', error);
     }
