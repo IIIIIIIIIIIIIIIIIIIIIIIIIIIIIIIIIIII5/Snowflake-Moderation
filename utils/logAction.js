@@ -1,10 +1,9 @@
 const admin = require("firebase-admin");
-
-const FIREBASE_CONFIG = JSON.parse(process.env.FIREBASE_CONFIG);
+const firebaseConfig = require("./firebase-credentials.json");
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(FIREBASE_CONFIG)
+    credential: admin.credential.cert(firebaseConfig)
   });
 }
 
