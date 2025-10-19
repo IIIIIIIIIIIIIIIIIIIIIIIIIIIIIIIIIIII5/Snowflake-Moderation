@@ -1,14 +1,21 @@
-const BIN_ID = process.env.JSONBIN_BIN_ID;
-const API_KEY = process.env.JSONBIN_API_KEY;
-const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const admin = require("firebase-admin");
+
+const FIREBASE_CONFIG = JSON.parse(process.env.FIREBASE_CONFIG);
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(FIREBASE_CONFIG)
+  });
+}
+
+const db = admin.firestore();
+const LOGS_COLLECTION = "logs";
 
 export async function logAction(actionData) {
     try {
-        const getResponse = await fetch(BASE_URL, {
-            headers: { 'X-Master-Key': API_KEY }
-        });
-        const bin = await getResponse.json();
-        const logs = Array.isArray(bin.record) ? bin.record : [];
+        const snapshot = await db.collection(LOGS_COLLECTION).get();
+        const logs = [];
+        snapshot.forEach(doc => logs.push(doc.data()));
 
         const nextId = logs.length + 1;
         const punishmentId = `#${nextId.toString().padStart(4, '0')}`;
@@ -19,13 +26,10 @@ export async function logAction(actionData) {
             timestamp: new Date().toLocaleString('en-GB')
         });
 
-        await fetch(BASE_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY
-            },
-            body: JSON.stringify(logs)
+        await db.collection(LOGS_COLLECTION).add({
+            ...actionData,
+            id: punishmentId,
+            timestamp: new Date().toLocaleString('en-GB')
         });
 
         return punishmentId;
