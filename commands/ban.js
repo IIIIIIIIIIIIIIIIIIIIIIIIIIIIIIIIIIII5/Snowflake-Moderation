@@ -21,7 +21,7 @@ export default {
     if(!member.bannable) return interaction.reply({ content:'I cannot ban this user.', ephemeral:true });
 
     const dmEmbed = new EmbedBuilder()
-      .setTitle('# PUNISHMENT RECEIVED')
+      .setTitle('PUNISHMENT RECEIVED')
       .setDescription(`You have been **banned** from **Snowflake Penitentiary Communications Server**, for ${reason}.`)
       .setColor(0xFF0000)
       .setTimestamp();
