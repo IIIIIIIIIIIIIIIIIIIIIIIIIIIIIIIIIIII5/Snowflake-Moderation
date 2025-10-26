@@ -24,11 +24,13 @@ client.on('interactionCreate', async interaction => {
       const modal = new ModalBuilder()
         .setCustomId(`editReasonModal_${userId}_${punishmentId}`)
         .setTitle('Edit Punishment Reason');
+
       const input = new TextInputBuilder()
         .setCustomId('newReason')
         .setLabel('New Reason')
         .setStyle(TextInputStyle.Paragraph)
         .setRequired(true);
+
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal);
     } 
@@ -52,18 +54,12 @@ client.on('interactionCreate', async interaction => {
           ]
         });
 
-        if (punished?.type === 'mute') {
-          await member.timeout(null, 'Mute revoked');
-        } else if (punished?.type === 'ban') {
-          await interaction.guild.members.unban(userId, 'Ban revoked');
-        } else if (punished?.type === 'unban') {
-          await interaction.guild.members.ban(userId, { reason: 'Unban revoked' });
-        }
+        if (punished?.type === 'mute') await member.timeout(null, 'Mute revoked');
+        else if (punished?.type === 'ban') await interaction.guild.members.unban(userId, 'Ban revoked');
+        else if (punished?.type === 'unban') await interaction.guild.members.ban(userId, { reason: 'Unban revoked' });
       } catch {}
 
-      const disabledRow = new ActionRowBuilder()
-        .addComponents(interaction.message.components[0].components.map(btn => btn.setDisabled(true)));
-      await interaction.update({ components: [disabledRow] });
+      await interaction.update({ components: [] });
     }
   } 
   else if (interaction.isModalSubmit()) {
@@ -71,6 +67,7 @@ client.on('interactionCreate', async interaction => {
       const [, userId, punishmentId] = interaction.customId.split('_');
       const newReason = interaction.fields.getTextInputValue('newReason');
       await updateReason(userId, punishmentId, newReason);
+
       try {
         const member = await interaction.guild.members.fetch(userId);
         await member.send({
@@ -82,7 +79,16 @@ client.on('interactionCreate', async interaction => {
               .setTimestamp()
           ]
         });
+
+        const logMessage = interaction.message;
+        if (logMessage) {
+          const embed = EmbedBuilder.from(logMessage.embeds[0]);
+          const fields = embed.data.fields.map(f => f.name === 'Reason' ? { name:'Reason', value:newReason } : f);
+          embed.setFields(fields);
+          await logMessage.edit({ embeds:[embed] });
+        }
       } catch {}
+
       await interaction.reply({ content:'Reason updated successfully.', ephemeral:true });
     }
   }
