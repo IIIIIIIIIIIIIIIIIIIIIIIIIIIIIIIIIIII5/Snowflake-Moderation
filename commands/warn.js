@@ -22,7 +22,7 @@ export default {
     const punishmentId = await logAction({ type:'warn', user:member.id, moderator:interaction.user.id, reason });
 
     const dmEmbed = new EmbedBuilder()
-      .setTitle('# PUNISHMENT RECEIVED')
+      .setTitle('PUNISHMENT RECEIVED')
       .setDescription(`You have been **warned** in Snowflake Penitentiary for ${reason}`)
       .setColor(0xFFD700)
       .setFooter({ text:`Case ${punishmentId}` })
