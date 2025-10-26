@@ -28,7 +28,51 @@ export async function logAction(actionData) {
             },
             body: JSON.stringify(logs)
         });
+
+        return punishmentId;
     } catch (error) {
         console.error('Failed to save moderation log:', error);
     }
+}
+
+export async function updateReason(userId, punishmentId, newReason) {
+    const getResponse = await fetch(BASE_URL, {
+        headers: { 'X-Master-Key': API_KEY }
+    });
+    const bin = await getResponse.json();
+    const logs = Array.isArray(bin.record) ? bin.record : [];
+
+    const updatedLogs = logs.map(log =>
+        log.user === userId && log.id === punishmentId
+            ? { ...log, reason: newReason, editedAt: new Date().toISOString() }
+            : log
+    );
+
+    await fetch(BASE_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(updatedLogs)
+    });
+}
+
+export async function revokePunishment(userId, punishmentId) {
+    const getResponse = await fetch(BASE_URL, {
+        headers: { 'X-Master-Key': API_KEY }
+    });
+    const bin = await getResponse.json();
+    const logs = Array.isArray(bin.record) ? bin.record : [];
+
+    const updatedLogs = logs.filter(log => !(log.user === userId && log.id === punishmentId));
+
+    await fetch(BASE_URL, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+        },
+        body: JSON.stringify(updatedLogs)
+    });
 }
