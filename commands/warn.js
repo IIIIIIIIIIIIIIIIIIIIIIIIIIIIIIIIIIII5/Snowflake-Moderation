@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { logAction } from '../utils/logAction.js';
 
 const LOG_CHANNEL_ID = '1419190262697033758';
@@ -8,36 +8,38 @@ export default {
   data: new SlashCommandBuilder()
     .setName('warn')
     .setDescription('Warn a user.')
-    .addUserOption(opt => opt.setName('target').setDescription('User to warn').setRequired(true))
-    .addStringOption(opt => opt.setName('reason').setDescription('Reason').setRequired(true)),
+    .addUserOption(option =>
+      option.setName('target').setDescription('User to warn').setRequired(true))
+    .addStringOption(option =>
+      option.setName('reason').setDescription('Reason for warning').setRequired(true)),
 
   async execute(interaction) {
-    if(!interaction.member.roles.cache.some(r=>ALLOWED_ROLES.includes(r.id))) return interaction.reply({ content:'No permission', ephemeral:true });
+    if(!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id)))
+      return interaction.reply({ content:'You do not have permission to use this command.', ephemeral:true });
 
     const member = interaction.options.getMember('target');
     const reason = interaction.options.getString('reason');
-    if(!member) return interaction.reply({ content:'User not found', ephemeral:true });
-
-    const punishmentId = await logAction({ type:'warn', user:member.id, moderator:interaction.user.id, reason });
+    if(!member) return interaction.reply({ content:'User not found.', ephemeral:true });
 
     const dmEmbed = new EmbedBuilder()
       .setTitle('# PUNISHMENT RECEIVED')
-      .setDescription(`You have been **warned** in Snowflake Penitentiary for ${reason}`)
+      .setDescription(`You have been **warned** in **Snowflake Penitentiary Communications Server**, for ${reason}.  
+If you feel this punishment has been delivered to you unfairly, then join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal your punishment.`)
       .setColor(0xFFD700)
-      .setFooter({ text:`Case ${punishmentId}` })
-      .setTimestamp();
+      .setTimestamp()
+      .setFooter({ text:`Timestamp: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB')}` });
 
-    try { await member.send({ embeds:[dmEmbed] }); } catch {}
+    try{ await member.send({ embeds:[dmEmbed] }); } catch { console.warn(`Failed to DM ${member.user.tag}`); }
 
-    const logEmbed = new EmbedBuilder()
-      .setTitle(`Warning Issued - ${member.user.tag}`)
-      .addFields(
-        { name:'Reason', value:reason },
-        { name:'Issued by', value:`<@${interaction.user.id}>` },
-        { name:'Time', value:new Date().toLocaleString('en-US',{ dateStyle:'full', timeStyle:'short' }) }
-      )
-      .setFooter({ text:`Case ${punishmentId}` })
-      .setColor(0xFFD700);
+    const publicEmbed = new EmbedBuilder()
+      .setDescription(`<@${member.id}> has been warned. Reason: ${reason}`)
+      .setColor(0xFFD700)
+      .setTimestamp()
+      .setFooter({ text:`Warned by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
+
+    await interaction.reply({ embeds:[publicEmbed] });
+
+    const punishmentId = await logAction({ type:'warn', user:member.id, moderator:interaction.user.id, reason });
 
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`editReason_${member.id}_${punishmentId}`).setLabel('Edit Reason').setStyle(ButtonStyle.Primary),
@@ -45,7 +47,6 @@ export default {
     );
 
     const logChannel = await interaction.client.channels.fetch(LOG_CHANNEL_ID);
-    await logChannel.send({ embeds:[logEmbed], components:[buttons] });
-    await interaction.reply({ content:`Warned <@${member.id}>`, ephemeral:true });
+    await logChannel.send({ embeds:[publicEmbed], components:[buttons] });
   }
 };
