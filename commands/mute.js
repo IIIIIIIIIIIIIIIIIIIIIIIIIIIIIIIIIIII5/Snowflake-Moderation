@@ -26,7 +26,7 @@ export default {
     await member.timeout(ms, reason);
 
     const dmEmbed = new EmbedBuilder()
-      .setTitle('# PUNISHMENT RECEIVED')
+      .setTitle('PUNISHMENT RECEIVED')
       .setDescription(`You have been **muted** for **${duration} minutes** in **Snowflake Penitentiary Communications Server**, for ${reason}.`)
       .setColor(0x808080)
       .setTimestamp();
