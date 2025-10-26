@@ -21,7 +21,7 @@ export default {
     if(!member.kickable) return interaction.reply({ content:'I cannot kick this user.', ephemeral:true });
 
     const dmEmbed = new EmbedBuilder()
-      .setTitle('# PUNISHMENT RECEIVED')
+      .setTitle('PUNISHMENT RECEIVED')
       .setDescription(`You have been **kicked** from **Snowflake Penitentiary Communications Server**, for ${reason}.`)
       .setColor(0xFFA500)
       .setTimestamp();
