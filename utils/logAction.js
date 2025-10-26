@@ -10,8 +10,9 @@ export async function logAction(actionData) {
         const bin = await getResponse.json();
         const logs = Array.isArray(bin.record) ? bin.record : [];
 
-        const nextId = logs.length + 1;
-        const punishmentId = `#${nextId.toString().padStart(4, '0')}`;
+        const userLogs = logs.filter(entry => entry.user === actionData.user);
+        const nextId = userLogs.length + 1;
+        const punishmentId = `#${nextId}`;
 
         logs.push({
             ...actionData,
