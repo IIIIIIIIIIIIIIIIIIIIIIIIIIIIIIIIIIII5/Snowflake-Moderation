@@ -43,7 +43,7 @@ export default {
       const timestamp = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
 
       const logEmbed = new EmbedBuilder()
-        .setTitle(`Unban Executed - ${userId}`)
+        .setTitle(`Unban Issued - ${userId}`)
         .addFields(
           { name: 'Reason', value: reason },
           { name: 'Issued by', value: `<@${interaction.user.id}>` },
