@@ -47,7 +47,7 @@ client.on('interactionCreate', async interaction => {
         await member.send({
           embeds: [
             new EmbedBuilder()
-              .setTitle('# PUNISHMENT REVOKED')
+              .setTitle('PUNISHMENT REVOKED')
               .setDescription(`Your punishment (Case ${punishmentId}) has been revoked.`)
               .setColor(0x00FF00)
               .setTimestamp()
@@ -73,7 +73,7 @@ client.on('interactionCreate', async interaction => {
         await member.send({
           embeds: [
             new EmbedBuilder()
-              .setTitle('# REASON EDITED')
+              .setTitle('REASON EDITED')
               .setDescription(`Your punishment reason (Case ${punishmentId}) has been updated to: ${newReason}`)
               .setColor(0xFFFF00)
               .setTimestamp()
