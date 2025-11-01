@@ -9,7 +9,6 @@ export default {
     .setName('ban')
     .setDescription('Ban a user from the server.')
     .addUserOption(option => option.setName('target').setDescription('User to ban').setRequired(true))
-    .addStringOption(option => option.setName('reason').setDescription('Reason for the ban').setRequired(false))
     .addStringOption(option => 
       option.setName('appealable')
         .setDescription('Can this punishment be appealed?')
@@ -18,15 +17,16 @@ export default {
           { name: 'Yes', value: 'Yes' },
           { name: 'No', value: 'No' }
         )
-    ),
+    )
+    .addStringOption(option => option.setName('reason').setDescription('Reason for the ban').setRequired(false)),
 
   async execute(Interaction) {
     if(!Interaction.member.roles.cache.some(r => AllowedRoles.includes(r.id)))
       return Interaction.reply({ content:'You do not have permission.', ephemeral:true });
 
     const Member = Interaction.options.getMember('target');
-    const Reason = Interaction.options.getString('reason') || 'No reason provided.';
     const Appealable = Interaction.options.getString('appealable') || 'Yes';
+    const Reason = Interaction.options.getString('reason') || 'No reason provided.';
 
     if(!Member) return Interaction.reply({ content:'User not found', ephemeral:true });
     if(!Member.bannable) return Interaction.reply({ content:'I cannot ban this user.', ephemeral:true });
