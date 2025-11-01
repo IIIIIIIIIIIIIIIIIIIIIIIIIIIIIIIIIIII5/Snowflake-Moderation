@@ -10,11 +10,15 @@ export default {
     .setDescription('Ban a user from the server.')
     .addUserOption(option => option.setName('target').setDescription('User to ban').setRequired(true))
     .addStringOption(option => option.setName('reason').setDescription('Reason for the ban').setRequired(false))
-    .addStringOption(option => option.setName('appealable').setDescription('Can this punishment be appealed?').setRequired(true)
-      .addChoices(
-        { name: 'Yes', value: 'Yes' },
-        { name: 'No', value: 'No' }
-      )),
+    .addStringOption(option => 
+      option.setName('appealable')
+        .setDescription('Can this punishment be appealed?')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Yes', value: 'Yes' },
+          { name: 'No', value: 'No' }
+        )
+    ),
 
   async execute(Interaction) {
     if(!Interaction.member.roles.cache.some(r => AllowedRoles.includes(r.id)))
