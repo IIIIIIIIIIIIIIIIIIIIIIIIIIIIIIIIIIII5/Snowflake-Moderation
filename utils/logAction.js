@@ -35,9 +35,13 @@ export async function logAction(actionData) {
       body: JSON.stringify(logs)
     });
 
-    return punishmentId;
+    const updatedUserLogs = logs.filter(entry => entry.user === actionData.user);
+    const punishmentCount = updatedUserLogs.length;
+
+    return { punishmentId, punishmentCount };
   } catch (error) {
     console.error('Failed to save moderation log:', error);
+    return { punishmentId: null, punishmentCount: 0 };
   }
 }
 
