@@ -32,7 +32,7 @@ export default {
     if(TargetMember && !TargetMember.bannable)
       return Interaction.reply({ content:'I cannot ban this user.', ephemeral:true });
 
-    let DmDescription = `You have been **banned** from **Snowflake Penitentiary Communications Server**, for ${Reason}.`;
+    let DmDescription = `You have been banned from Snowflake Penitentiary Communications Server, for **${Reason}**.`;
     if (Appealable === 'Yes') DmDescription += `\n\nIf you feel this punishment has been delivered to you unfairly then join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal your punishment.`;
 
     const DmEmbed = new EmbedBuilder()
