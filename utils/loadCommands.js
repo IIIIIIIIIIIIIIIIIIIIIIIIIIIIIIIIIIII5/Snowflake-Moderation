@@ -42,7 +42,7 @@ export async function loadCommands(client) {
       Routes.applicationCommands(process.env.CLIENTID),
       { body: commands }
     );
-    console.log('Guild slash commands registered successfully.');
+    console.log('Commands registered successfully.');
   } catch (error) {
     console.error('Failed to register commands:', error);
   }
