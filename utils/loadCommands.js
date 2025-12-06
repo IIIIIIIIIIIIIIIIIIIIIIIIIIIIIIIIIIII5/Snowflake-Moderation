@@ -27,8 +27,7 @@ export async function loadCommands(client) {
   const commands = client.commands.map(cmd => cmd.data.toJSON());
 
   try {
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: [] });
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: commands });
+    await rest.put(Routes.applicationCommands(process.env.CLIENTID), { body: commands });
     console.log('Guild commands cleared and registered successfully.');
   } catch (error) {
     console.error(error);
