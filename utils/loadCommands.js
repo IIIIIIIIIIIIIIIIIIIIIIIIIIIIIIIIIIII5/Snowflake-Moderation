@@ -4,15 +4,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const GuildId = '1386275140815425557';
 
 export async function loadCommands(client) {
   client.commands = new Collection();
 
-  const commandFiles = readdirSync(path.join(__dirname, '../commands')).filter(file => file.endsWith('.js'));
+  const commandsPath = path.join(__dirname, '../commands');
+  const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
-    const filePath = path.join(__dirname, '../commands', file);
+    const filePath = path.join(commandsPath, file);
     try {
       const commandModule = await import(filePath);
       const command = commandModule.default;
@@ -30,25 +30,25 @@ export async function loadCommands(client) {
 
   console.log(`Loaded ${client.commands.size} commands:`, [...client.commands.keys()]);
 
-  if (!process.env.CLIENTID || !process.env.TOKEN) {
+  const CLIENT_ID = process.env.CLIENTID?.replace(/"/g, '');
+  const TOKEN = process.env.TOKEN?.replace(/"/g, '');
+
+  if (!CLIENT_ID || !TOKEN) {
     throw new Error('Missing CLIENTID or TOKEN in environment variables.');
   }
 
-  const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+  const rest = new REST({ version: '10' }).setToken(TOKEN);
   const commands = client.commands.map(cmd => cmd.data.toJSON());
+
+  console.log('Registering commands...');
+  console.log('Commands to register:', commands.map(c => c.name));
 
   try {
     await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENTID, GuildId),
-      { body: [] }
-    );
-    console.log('Commands cleared successfully.');
-
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENTID, GuildId),
+      Routes.applicationCommands(CLIENT_ID),
       { body: commands }
     );
-    console.log('Commands registered successfully.');
+    console.log('Commands registered successfully!');
   } catch (error) {
     console.error('Failed to register commands:', error);
   }
