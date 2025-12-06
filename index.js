@@ -26,21 +26,7 @@ const ClientBot = new Client({
 ClientBot.commands = new Collection();
 await loadCommands(ClientBot);
 
-ClientBot.once('ready', async () => {
-  console.log(`Logged in as ${ClientBot.user.tag}`);
-
-  const guild = ClientBot.guilds.cache.get('1386275140815425557');
-  if (!guild) return console.error('Guild not found');
-
-  const memberCount = guild.memberCount;
-
-  ClientBot.user.setPresence({
-    activities: [
-      { name: `over ${memberCount} members' activity`, type: 3 }
-    ],
-    status: 'online'
-  });
-});
+ClientBot.once('ready', () => console.log(`Logged in as ${ClientBot.user.tag}`));
 
 ClientBot.on("messageCreate", async (message) => {
   if (!message.guild) return;
