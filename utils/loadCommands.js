@@ -4,11 +4,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const GuildId = '1386275140815425557';
 
-export async function loadCommands(client) {
+export async function loadCommands(client, guildId) {
   client.commands = new Collection();
 
+  // Load command files
   const commandFiles = readdirSync(path.join(__dirname, '../commands')).filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
@@ -16,18 +16,33 @@ export async function loadCommands(client) {
     try {
       const commandModule = await import(filePath);
       const command = commandModule.default;
-      if (!command?.data || !command?.execute) continue;
+
+      if (!command?.data || !command?.execute) {
+        console.warn(`Skipping ${file} — missing data or execute.`);
+        continue;
+      }
+
       client.commands.set(command.data.name, command);
-    } catch {}
+      console.log(`Loaded command: ${command.data.name}`);
+    } catch (err) {
+      console.error(`Failed to load command ${file}:`, err);
+    }
+  }
+
+  if (!process.env.TOKEN || !process.env.CLIENTID) {
+    throw new Error('Missing TOKEN or CLIENTID environment variables');
   }
 
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   const commands = client.commands.map(cmd => cmd.data.toJSON());
 
   try {
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: [] });
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: commands });
+    await rest.put(
+      Routes.applicationGuildCommands(process.env.CLIENTID, guildId),
+      { body: commands }
+    );
+    console.log('Guild commands registered successfully');
   } catch (error) {
-    console.error(error);
+    console.error('Failed to register commands:', error);
   }
 }
