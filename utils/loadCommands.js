@@ -39,11 +39,7 @@ export async function loadCommands(client) {
 
   try {
     await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENTID, GUILD_ID),
-      { body: [] }
-    );
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENTID, GUILD_ID),
+      Routes.applicationCommands(process.env.CLIENTID),
       { body: commands }
     );
     console.log('Guild slash commands registered successfully.');
