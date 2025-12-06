@@ -39,10 +39,10 @@ export async function loadCommands(client) {
 
   try {
     await rest.put(
-      Routes.applicationCommands(process.env.CLIENTID),
+      Routes.applicationGuildCommands(process.env.CLIENTID, GUILD_ID),
       { body: commands }
     );
-    console.log('Commands registered successfully.');
+    console.log('Guild commands registered successfully.');
   } catch (error) {
     console.error('Failed to register commands:', error);
   }
