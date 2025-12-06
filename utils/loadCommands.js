@@ -18,7 +18,9 @@ export async function loadCommands(client) {
       const command = commandModule.default;
       if (!command?.data || !command?.execute) continue;
       client.commands.set(command.data.name, command);
-    } catch {}
+    } catch (err) {
+      console.error(`Failed to load ${file}:`, err);
+    }
   }
 
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
@@ -27,7 +29,7 @@ export async function loadCommands(client) {
   try {
     await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: [] });
     await rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, GuildId), { body: commands });
-    await rest.put(Routes.applicationCommands(process.env.CLIENTID), { body: commands });
+    console.log('Guild commands cleared and registered successfully.');
   } catch (error) {
     console.error(error);
   }
