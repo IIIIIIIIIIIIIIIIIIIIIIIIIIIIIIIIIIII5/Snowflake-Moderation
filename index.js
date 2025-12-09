@@ -11,7 +11,8 @@ const RoleTable = {
   LeadershipPingBypass: "1441730075891597363",
   BotDev: "1418979785165766717",
   Leadership: "1386369108408406096",
-  ExecutiveDirector: "1400518658786070648"
+  ExecutiveDirector: "1400518658786070648",
+  Executive: "1443622126203572304"
 };
 
 const ClientBot = new Client({
