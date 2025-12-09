@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { logAction } from '../utils/logAction.js';
 
-const AllowedRoles = ['1398691449939169331','1386369108408406096','1418979785165766717'];
+const AllowedRoles = ['1398691449939169331','1386369108408406096','1418979785165766717', '1443622126203572304'];
 const LogChannelId = '1419190262697033758';
 
 export default {
