@@ -3,7 +3,8 @@ import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 const ALLOWED_ROLES = [
     '1398691449939169331',
     '1386369108408406096',
-    '1418979785165766717'
+    '1418979785165766717',
+    '1443622126203572304'
 ];
 
 const BIN_ID = process.env.JSONBIN_BIN_ID;
