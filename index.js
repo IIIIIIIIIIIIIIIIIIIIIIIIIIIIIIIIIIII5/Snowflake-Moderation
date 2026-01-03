@@ -61,7 +61,7 @@ ClientBot.on("messageCreate", async (message) => {
     }
 
     try {
-      await Member.send("You are not permitted to ping SFP Leadership. You have been timed out for 5 minutes.");
+      await Member.send("You are not permitted to ping SFP Ownership+. You have been timed out for 5 minutes.");
     }
     catch (err) {
       console.error(err);
