@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 
 const ALLOWED_ROLES = [
     '1398691449939169331',
@@ -27,77 +27,64 @@ export default {
         ),
 
     async execute(interaction) {
-        const hasPermission = interaction.member.roles.cache.some(role =>
-            ALLOWED_ROLES.includes(role.id)
-        );
-        if (!hasPermission) {
-            return interaction.reply({
-                content: 'You do not have permission to use this command.',
-                ephemeral: true
-            });
-        }
+        const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLES.includes(role.id));
+        if (!hasPermission) return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
 
         const user = interaction.options.getUser('target');
 
         try {
-            const response = await fetch(BASE_URL, {
-                headers: { 'X-Master-Key': API_KEY }
-            });
+            const response = await fetch(BASE_URL, { headers: { 'X-Master-Key': API_KEY } });
             const bin = await response.json();
             const logs = Array.isArray(bin.record) ? bin.record : [];
 
-            if (logs.length === 0) {
-                return interaction.reply({
-                    content: 'No moderation logs exist yet.',
-                    ephemeral: true
-                });
-            }
+            if (logs.length === 0) return interaction.reply({ content: 'No moderation logs exist yet.', ephemeral: true });
 
-            const allSorted = [...logs];
+            const userLogCounters = {};
+            const userLogs = logs
+                .filter(log => log.user === user.id)
+                .sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp))
+                .map((log, index) => { if (!userLogCounters[log.user]) userLogCounters[log.user] = 1; else userLogCounters[log.user]++; return { ...log, displayId: log.id && log.id.trim() !== '' ? log.id : formatGeneratedId(userLogCounters[log.user]) }; });
 
-            const displayIdMap = new Map();
-            allSorted.forEach((log, index) => {
-                const validId = log.id && log.id.trim() !== '' ? log.id : formatGeneratedId(index + 1);
-                displayIdMap.set(log, validId);
+            if (userLogs.length === 0) return interaction.reply({ content: 'No history found for this user.', ephemeral: true });
+
+            const pageSize = 5;
+            let page = 0;
+            const totalPages = Math.ceil(userLogs.length / pageSize);
+
+            const generateEmbed = (page) => {
+                const start = page * pageSize;
+                const currentLogs = userLogs.slice(start, start + pageSize);
+                return new EmbedBuilder()
+                    .setTitle(`History for ${user.tag}`)
+                    .setDescription(currentLogs.map(log => `**${log.displayId}** • ${log.type || 'unknown'} • ${log.reason || 'No reason provided.'}\n— <@${log.moderator || 'Unknown'}>`).join('\n\n'))
+                    .setColor(0x0099FF)
+                    .setFooter({ text: `Page ${page + 1} of ${totalPages}` });
+            };
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
+                new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Primary).setDisabled(page === totalPages - 1)
+            );
+
+            const message = await interaction.reply({ embeds: [generateEmbed(page)], components: [row], fetchReply: true });
+
+            const collector = message.createMessageComponentCollector({ time: 120000 });
+
+            collector.on('collect', i => {
+                if (i.user.id !== interaction.user.id) return i.reply({ content: 'You cannot control this pagination.', ephemeral: true });
+                if (i.customId === 'next' && page < totalPages - 1) page++;
+                else if (i.customId === 'prev' && page > 0) page--;
+                i.update({ embeds: [generateEmbed(page)], components: [new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('prev').setLabel('Previous').setStyle(ButtonStyle.Primary).setDisabled(page === 0),
+                    new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Primary).setDisabled(page === totalPages - 1)
+                )]});
             });
 
-            const userLogs = allSorted
-                .filter(log => log.user === user.id)
-                .map(log => ({
-                    ...log,
-                    displayId: displayIdMap.get(log)
-                }));
-
-            if (userLogs.length === 0) {
-                return interaction.reply({
-                    content: 'No history found for this user.',
-                    ephemeral: true
-                });
-            }
-
-            const description = userLogs
-                .slice(-10)
-                .map(log => {
-                    return (
-                        `**${log.displayId ?? 'N/A'}** • ${log.type || 'unknown'} • ${log.reason || 'No reason provided.'}\n` +
-                        `— <@${log.moderator || 'Unknown'}>`
-                    );
-                })
-                .join('\n\n');
-
-            const embed = new EmbedBuilder()
-                .setTitle(`History for ${user.tag}`)
-                .setDescription(description)
-                .setColor(0x0099FF);
-
-            await interaction.reply({ embeds: [embed] });
+            collector.on('end', () => { message.edit({ components: [] }).catch(() => {}); });
 
         } catch (error) {
             console.error('Failed to fetch moderation history:', error);
-            await interaction.reply({
-                content: 'Failed to fetch history.',
-                ephemeral: true
-            });
+            await interaction.reply({ content: 'Failed to fetch history.', ephemeral: true });
         }
     }
 };
