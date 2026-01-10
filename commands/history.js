@@ -40,20 +40,28 @@ export default {
             if (logs.length === 0) return interaction.reply({ content: 'No moderation logs exist yet.', ephemeral: true });
 
             const userLogCounters = {};
-            const userLogs = logs
+            const userLogsAll = logs
                 .filter(log => log.user === user.id)
-                .sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp))
-                .map((log, index) => { if (!userLogCounters[log.user]) userLogCounters[log.user] = 1; else userLogCounters[log.user]++; return { ...log, displayId: log.id && log.id.trim() !== '' ? log.id : formatGeneratedId(userLogCounters[log.user]) }; });
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                .map((log) => {
+                    if (!userLogCounters[log.user]) userLogCounters[log.user] = 1;
+                    else userLogCounters[log.user]++;
+                    return {
+                        ...log,
+                        displayId: log.id && log.id.trim() !== '' ? log.id : formatGeneratedId(userLogCounters[log.user])
+                    };
+                });
 
-            if (userLogs.length === 0) return interaction.reply({ content: 'No history found for this user.', ephemeral: true });
+            if (userLogsAll.length === 0) return interaction.reply({ content: 'No history found for this user.', ephemeral: true });
 
             const pageSize = 5;
+            const reversedLogs = [...userLogsAll].reverse();
             let page = 0;
-            const totalPages = Math.ceil(userLogs.length / pageSize);
+            const totalPages = Math.ceil(reversedLogs.length / pageSize);
 
             const generateEmbed = (page) => {
                 const start = page * pageSize;
-                const currentLogs = userLogs.slice(start, start + pageSize);
+                const currentLogs = reversedLogs.slice(start, start + pageSize);
                 return new EmbedBuilder()
                     .setTitle(`History for ${user.tag}`)
                     .setDescription(currentLogs.map(log => `**${log.displayId}** • ${log.type || 'unknown'} • ${log.reason || 'No reason provided.'}\n— <@${log.moderator || 'Unknown'}>`).join('\n\n'))
