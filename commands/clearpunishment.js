@@ -10,63 +10,63 @@ function formatGeneratedId(n) {
 }
 
 export default {
-  data: new SlashCommandBuilder()
-    .setName('clearpunishment')
-    .setDescription('Remove a specific punishment by its ID.')
-    .addStringOption(opt =>
-      opt.setName('id')
-        .setDescription('Punishment ID (e.g. #0002)')
-        .setRequired(true)
-    )
-    .addUserOption(opt =>
-      opt.setName('target')
-        .setDescription('User whose punishment you want to clear')
-        .setRequired(false)
-    ),
+    data: new SlashCommandBuilder()
+        .setName('clearpunishment')
+        .setDescription('Remove a specific punishment by its per-user ID.')
+        .addStringOption(opt =>
+            opt.setName('id')
+                .setDescription('Punishment ID (e.g. #0002)')
+                .setRequired(true)
+        )
+        .addUserOption(opt =>
+            opt.setName('target')
+                .setDescription('User whose punishment you want to clear')
+                .setRequired(true)
+        ),
 
-  async execute(interaction) {
-    if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id))) {
-      return interaction.reply({ content: 'You lack permission to use this command.', ephemeral: true });
+    async execute(interaction) {
+        if (!interaction.member.roles.cache.some(r => ALLOWED_ROLES.includes(r.id))) {
+            return interaction.reply({ content: 'You lack permission to use this command.', ephemeral: true });
+        }
+
+        const rawId = interaction.options.getString('id');
+        const id = rawId.startsWith('#') ? rawId : `#${rawId}`;
+        const targetUser = interaction.options.getUser('target');
+
+        try {
+            const res = await fetch(BASE_URL, { headers: { 'X-Master-Key': API_KEY } });
+            const bin = await res.json();
+            const logs = Array.isArray(bin.record) ? bin.record : [];
+
+            const userLogs = logs
+                .filter(l => l.user === targetUser.id)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            const index = userLogs.findIndex((_, i) => formatGeneratedId(i + 1) === id);
+            if (index === -1) {
+                return interaction.reply({ content: `No punishment found with ID ${id} for ${targetUser.tag}.`, ephemeral: true });
+            }
+
+            const logToRemove = userLogs[index];
+            const globalIndex = logs.findIndex(l => l === logToRemove);
+            logs.splice(globalIndex, 1);
+
+            await fetch(BASE_URL, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify(logs)
+            });
+
+            return interaction.reply({
+                content: `Punishment ${id} (${logToRemove.type}) for ${targetUser.tag} has been cleared.`
+            });
+
+        } catch (error) {
+            console.error(error);
+            return interaction.reply({ content: 'Failed to clear punishment.', ephemeral: true });
+        }
     }
-
-    const rawId = interaction.options.getString('id');
-    const id = rawId.startsWith('#') ? rawId : `#${rawId}`;
-    const targetUser = interaction.options.getUser('target') || interaction.user;
-
-    try {
-      const res = await fetch(BASE_URL, { headers: { 'X-Master-Key': API_KEY } });
-      const bin = await res.json();
-      const logs = Array.isArray(bin.record) ? bin.record : [];
-
-      const index = logs.findIndex(log => log.id === id && log.user === targetUser.id);
-      if (index === -1) {
-        return interaction.reply({
-          content: `No punishment found with ID ${id} for ${targetUser.tag}.`,
-          ephemeral: true
-        });
-      }
-
-      const [removed] = logs.splice(index, 1);
-
-      logs.forEach((log, i) => {
-        log.id = formatGeneratedId(i + 1);
-      });
-
-      await fetch(BASE_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': API_KEY
-        },
-        body: JSON.stringify(logs)
-      });
-
-      return interaction.reply({
-        content: `Punishment ${id} (${removed.type}) for ${targetUser.tag} has been cleared. All remaining punishments have been renumbered.`
-      });
-    } catch (error) {
-      console.error(error);
-      return interaction.reply({ content: 'Failed to clear punishment.', ephemeral: true });
-    }
-  }
 };
