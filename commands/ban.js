@@ -30,6 +30,12 @@ export default {
           { name: 'No', value: 'No' }
         )
     )
+    .addBooleanOption(option =>
+      option
+        .setName('dm')
+        .setDescription('DM the user about the ban? (defaults to true)')
+        .setRequired(false)
+    )
     .addStringOption(option =>
       option
         .setName('reason')
@@ -41,37 +47,36 @@ export default {
     await Interaction.deferReply();
 
     if (!Interaction.member.roles.cache.some(r => AllowedRoles.includes(r.id))) {
-      return Interaction.editReply({
-        content: 'You do not have permission.'
-      });
+      return Interaction.editReply({ content: 'You do not have permission.' });
     }
 
     const TargetUser = Interaction.options.getUser('target');
     const TargetMember = Interaction.options.getMember('target');
     const Appealable = Interaction.options.getString('appealable') ?? 'Yes';
     const Reason = Interaction.options.getString('reason') ?? 'No reason provided.';
+    const ShouldDm = Interaction.options.getBoolean('dm') ?? true;
 
     if (TargetMember && !TargetMember.bannable) {
-      return Interaction.editReply({
-        content: 'I cannot ban this user.'
-      });
+      return Interaction.editReply({ content: 'I cannot ban this user.' });
     }
 
-    let DmDescription = `You have been banned from Snowflake Penitentiary Communications Server for **${Reason}**.`;
+    if (ShouldDm) {
+      let DmDescription = `You have been banned from Snowflake Penitentiary Communications Server for **${Reason}**.`;
 
-    if (Appealable === 'Yes') {
-      DmDescription += `\n\nIf you believe this punishment was unfair, join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal.`;
+      if (Appealable === 'Yes') {
+        DmDescription += `\n\nIf you believe this punishment was unfair, join our [Administration Server](https://discord.gg/ZSJuzdVAee) to appeal.`;
+      }
+
+      const DmEmbed = new EmbedBuilder()
+        .setTitle('PUNISHMENT RECEIVED')
+        .setDescription(DmDescription)
+        .setColor(0xFF0000)
+        .setTimestamp();
+
+      try {
+        await TargetUser.send({ embeds: [DmEmbed] });
+      } catch {}
     }
-
-    const DmEmbed = new EmbedBuilder()
-      .setTitle('PUNISHMENT RECEIVED')
-      .setDescription(DmDescription)
-      .setColor(0xFF0000)
-      .setTimestamp();
-
-    try {
-      await TargetUser.send({ embeds: [DmEmbed] });
-    } catch {}
 
     await Interaction.guild.members.ban(TargetUser.id, { reason: Reason });
 
@@ -106,6 +111,7 @@ export default {
         .addFields(
           { name: 'Reason', value: Reason },
           { name: 'Appealable', value: Appealable },
+          { name: 'DM Sent', value: ShouldDm ? 'Yes' : 'No' },
           { name: 'Issued by', value: `<@${Interaction.user.id}>` },
           {
             name: 'Time',
